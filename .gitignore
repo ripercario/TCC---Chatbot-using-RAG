@@ -1,0 +1,11 @@
+# Ocultar dados locais
+data/
+*.pdf
+
+# Python
+__pycache__/
+.venv/
+*.pyc
+
+# Chainlit logs e cache
+chainlit.log
