@@ -1,47 +1,40 @@
+# ADICIONADO: importação da classe Ollama do LangChain
+from langchain_community.llms import Ollama
 from rag_pipeline import retrieve_evidence
-import requests
-import json
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-
-def ask_model(prompt: str, model="llama3") -> str:
-    payload = {
-        "model": model,
-        "prompt": prompt
-    }
-
-    try:
-        response = requests.post(OLLAMA_URL, json=payload, stream=True)
-        response.raise_for_status()
-
-        full_response = ""
-        for line in response.iter_lines():
-            if line:
-                try:
-                    json_response = line.decode('utf-8')
-                    response_data = json.loads(json_response)
-                    full_response += response_data.get("response", "")
-                except ValueError as e:
-                    print(f"[ERRO] Não foi possível processar o JSON: {e}")
-
-        return full_response.strip()
-    except requests.RequestException as e:
-        return f"[ERRO] FALHA DE COMUNICAÇÃO COM O MODELO - {e}"
+# REMOVIDO: A função ask_model inteira que usava 'requests' e 'json' foi removida,
+# pois a classe Ollama do LangChain cuidará dessa comunicação.
 
 def get_model_response(prompt: str) -> str:
-    # Recupera evidência do PDF
+    """
+    Orquestra o processo de RAG: recupera evidências e gera uma resposta com o LLM.
+    """
+    # Passo 1: Recuperar evidência do PDF (nenhuma mudança aqui)
     evidence = retrieve_evidence(prompt)
 
     if not evidence.strip():
         return "Nenhuma evidência relevante foi encontrada no documento para responder à sua pergunta."
     
-    # Monta o prompt com contexto
+    # Passo 2: Montar o prompt com o contexto para o LLM (nenhuma mudança aqui)
     full_prompt = f"""
-Com base no conteúdo do documento a seguir, responda o que se pede. 
+Com base no conteúdo do documento a seguir, responda o que se pede de forma concisa e direta. 
 [CONTEÚDO DO DOCUMENTO]
 {evidence}
 [FIM DO CONTEÚDO]
 
 PERGUNTA: {prompt}
 """
-    return ask_model(full_prompt)
+    
+    # Passo 3: Chamar o modelo usando a integração do LangChain
+    try:
+        # MUDANÇA: Instanciamos o modelo Ollama diretamente
+        llm = Ollama(model="llama3")
+        
+        # MUDANÇA: Invocamos o modelo com o prompt. O LangChain gerencia a chamada à API.
+        response = llm.invoke(full_prompt)
+        
+        return response.strip()
+    
+    except Exception as e:
+        # Captura exceções de comunicação, como o serviço do Ollama estar offline
+        return f"[ERRO] FALHA DE COMUNICAÇÃO COM O MODELO - {e}"

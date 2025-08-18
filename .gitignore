@@ -1,14 +1,25 @@
-# Ocultar dados locais
-data/
-*.pdf
-
-# Python
-__pycache__/
+# Arquivos e pastas de ambiente virtual
 .venv/
+venv/
+
+# Pastas de cache do Python
+__pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-#Ocultar pasta de imagens
-imgs/
+# Pastas com dados sensíveis e índices gerados
+# (Conforme sua solicitação)
+data/
+Docmuentos/
 
-# Chainlit logs e cache
-chainlit.log
+# Pastas temporárias e de configuração do Chainlit
+.chainlit/
+.files/
+
+# Arquivos de configuração de IDEs (opcional, mas boa prática)
+.vscode/
+.idea/
+
+# Arquivos de log
+*.log
