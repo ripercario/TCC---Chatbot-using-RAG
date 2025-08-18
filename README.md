@@ -92,7 +92,7 @@ Coloque todos os manuais e documentos em formato `.pdf` em um caminho, que será
 **b. Crie o índice vetorial:**
 Execute o script `create_index.py` para processar os PDFs e criar o banco de dados vetorial FAISS.
 python create_index.py
-```
+
 
 Observação: Este processo pode ser lento na primeira vez devido ao OCR. Ele só precisa ser executado quando novos documentos são adicionados.
 
