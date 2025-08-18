@@ -1,41 +1,44 @@
 # app/rag_pipeline.py
 
-# --- MUDANÇA: O Loader foi trocado para UnstructuredPDFLoader ---
 from langchain_community.document_loaders import UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 import os
 
-# O caminho do índice continua o mesmo
+# Define o caminho padrão para o índice FAISS salvo.
 INDEX_PATH = "data/faiss_index"
 
-# Classe customizada para o modelo Snowflake Arctic
+# Classe customizada para o embedding do Snowflake Arctic que aplica o prefixo 'query:'.
 class ArcticHuggingFaceEmbeddings(HuggingFaceEmbeddings):
+    """
+    Classe de embedding customizada para os modelos Snowflake Arctic.
+    Adiciona o prefixo 'query: ' às perguntas para otimizar a busca,
+    conforme a recomendação do modelo.
+    """
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        # Para o Arctic, os documentos não levam prefixo.
+        # Documentos não recebem prefixo no modelo Arctic.
         return super().embed_documents(texts)
 
     def embed_query(self, text: str) -> list[float]:
-        # Adiciona o prefixo "query:" apenas para a pergunta do usuário.
+        # Adiciona o prefixo 'query:' para otimizar a busca por similaridade.
         prefixed_text = f"query: {text}"
         return super().embed_query(prefixed_text)
 
 
 def update_or_create_vector_store(pdf_path: str, index_path: str = INDEX_PATH):
     """
-    Verifica se um vector store já existe.
-    - Se existir, carrega-o e adiciona o novo documento.
-    - Se não existir, cria um novo a partir do documento.
+    Processa um arquivo PDF e cria ou atualiza um vector store local.
+    Se um índice já existe no `index_path`, os novos documentos são adicionados a ele.
+    Caso contrário, um novo índice é criado.
     """
-    print(f"Processando o novo documento com Unstructured (Estratégia OCR): {pdf_path}...")
+    print(f"Processando documento: {pdf_path}...")
     try:
-        # --- MUDANÇA PRINCIPAL: Forçando a estratégia de OCR ---
-        # Isso garante que o Tesseract será usado em todas as páginas.
+        # Carrega o documento usando Unstructured com OCR forçado para português.
         loader = UnstructuredPDFLoader(pdf_path, strategy="ocr_only", languages=["por"])
-        
         new_documents = loader.load()
         
+        # Divide os documentos carregados em chunks de texto.
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=800,
             chunk_overlap=150,
@@ -43,29 +46,33 @@ def update_or_create_vector_store(pdf_path: str, index_path: str = INDEX_PATH):
         )
         new_chunks = splitter.split_documents(new_documents)
         
+        # Inicializa o modelo de embedding customizado.
         embeddings = ArcticHuggingFaceEmbeddings(model_name="Snowflake/snowflake-arctic-embed-m")
 
     except Exception as e:
-        print(f"Erro ao processar o novo documento {pdf_path}: {e}")
+        print(f"Erro ao processar o documento {pdf_path}: {e}")
         return
 
+    # Verifica se o índice local já existe para decidir entre atualizar ou criar.
     if os.path.exists(index_path):
-        print(f"Índice existente encontrado em '{index_path}'. Atualizando...")
+        print(f"Índice existente encontrado. Atualizando...")
         vectorstore = FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
         vectorstore.add_documents(new_chunks)
-        print("Novos documentos adicionados ao índice.")
+        print("Índice atualizado.")
     else:
-        print(f"Nenhum índice encontrado. Criando um novo em '{index_path}'...")
+        print(f"Nenhum índice encontrado. Criando novo índice...")
         os.makedirs(index_path, exist_ok=True)
         vectorstore = FAISS.from_documents(new_chunks, embeddings)
         print("Novo índice criado.")
 
+    # Salva o estado do vector store no disco.
     vectorstore.save_local(index_path)
     print(f"Índice salvo com sucesso em '{index_path}'.")
 
 def load_vector_store(index_path: str = INDEX_PATH):
+    """Carrega o índice FAISS do disco."""
     if not os.path.exists(index_path):
-        print("Erro: Nenhum índice encontrado para carregar. Por favor, adicione um documento primeiro.")
+        print(f"Erro: Índice não encontrado em '{index_path}'.")
         return None
     
     embeddings = ArcticHuggingFaceEmbeddings(model_name="Snowflake/snowflake-arctic-embed-m")
@@ -74,16 +81,21 @@ def load_vector_store(index_path: str = INDEX_PATH):
 
 
 def retrieve_evidence(query: str, k: int = 15):
+    """
+    Recupera os 'k' chunks de texto mais relevantes para uma dada query.
+    """
     vectorstore = load_vector_store()
     if vectorstore is None:
-        return "A base de conhecimento está vazia. Por favor, adicione um P" \
-        "DF."
+        return "A base de conhecimento está vazia. Por favor, adicione um PDF."
 
+    # Realiza a busca por similaridade no vector store.
     results = vectorstore.similarity_search(query, k=k)
-    evidencias = "\n---\n".join([doc.page_content for doc in results])
-
-    # --- ADICIONE ESTAS DUAS LINHAS PARA DEPURAÇÃO ---
+    
+    # Formata os resultados como uma única string de contexto.
+    evidence = "\n---\n".join([doc.page_content for doc in results])
+    
+    # Imprime as evidências recuperadas para fins de depuração.
     print("\n--- EVIDÊNCIAS RECUPERADAS PARA O LLM ---\n")
-    # --- FIM DA ADIÇÃO ---
-
-    return evidencias
+    print(evidence)
+    
+    return evidence
