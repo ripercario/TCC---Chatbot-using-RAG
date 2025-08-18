@@ -60,12 +60,14 @@ Siga os passos abaixo para configurar e rodar o projeto em seu ambiente local.
 ```bash
 git clone [https://github.com/ripercario/TCC---Chatbot-using-RAG.git](https://github.com/ripercario/TCC---Chatbot-using-RAG.git)
 cd TCC---Chatbot-using-RAG
+```
 
 **b. Crie e ative um ambiente virtual:**
 ```bash
 # Windows
 python -m venv .venv
 .\.venv\Scripts\activate
+
 
 # macOS / Linux
 python3 -m venv .venv
