@@ -9,7 +9,6 @@ __pycache__/
 *.pyd
 
 # Pastas com dados sensíveis e índices gerados
-# (Conforme sua solicitação)
 data/
 Docmuentos/
 
@@ -17,7 +16,7 @@ Docmuentos/
 .chainlit/
 .files/
 
-# Arquivos de configuração de IDEs (opcional, mas boa prática)
+# Arquivos de configuração de IDEs 
 .vscode/
 .idea/
 

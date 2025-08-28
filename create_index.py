@@ -1,6 +1,6 @@
 from app.rag_pipeline import update_or_create_vector_store
 
-# 2. Defina o caminho para o PDF que você quer adicionar agora
+# Defina o caminho para o PDF que você quer adicionar
 pdf_para_adicionar = ""
 
 update_or_create_vector_store(pdf_para_adicionar)

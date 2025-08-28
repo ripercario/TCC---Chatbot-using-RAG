@@ -1,27 +1,31 @@
-# Web Interface
+--- Interface do Usuário ---
 chainlit
 
-# LangChain Core e Componentes de IA
+--- LangChain: Core e Integrações ---
 langchain
 langchain-community
-langchain-huggingface
-langchain-ollama
+langchain-core
+langchain-huggingface  
+langchain-ollama       
 
-# Vector Store
-faiss-cpu
+--- Armazenamento Vetorial (Vector Store) ---
+faiss-cpu              
 
-# Embedding Models
+--- Modelo de Embedding ---
+Esta biblioteca baixa e executa os modelos de embedding, incluindo o Snowflake Arctic.
 sentence-transformers
 
-# PDF Processing & OCR
+--- Processamento de PDF e OCR ---
+Pacote principal para extração de dados de PDFs, incluindo tabelas e imagens
 unstructured[local-inference]
+
+Wrapper Python para o motor de OCR Tesseract
 pytesseract
+
+Utilitário para renderizar PDFs (usado pelo Unstructured)
 pymupdf
 
-# Lógica de Grafo (Protótipo)
-lightrag
-litellm
-
-# Utilitários
-python-dotenv
-networkx
+--- Utilitários ---
+python-dotenv         
+networkx               
+pydantic               

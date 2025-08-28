@@ -1,130 +1,146 @@
-# Assistente Virtual com IA para Consulta de Documentos Corporativos
+# 🤖 Assistente Virtual com IA para Consulta de Documentos Corporativos
 
-**Status do Projeto: Em Desenvolvimento (Protótipo Funcional)**
+**📌 Status do Projeto:** Protótipo Funcional
 
-Este repositório contém o código-fonte do projeto de Trabalho de Conclusão de Curso (TCC) em Engenharia de Computação, que consiste em um chatbot inteligente projetado para otimizar o acesso à informação em manuais e documentos operacionais de uma empresa.
+Este repositório contém o código-fonte do projeto de Trabalho de Conclusão de Curso (TCC) em Engenharia de Computação.  
+A solução consiste em um chatbot inteligente projetado para otimizar o acesso à informação em manuais e documentos operacionais complexos, utilizando uma arquitetura de RAG Híbrida.
+
+---
 
 ## 📖 Visão Geral
 
-Em ambientes corporativos, especialmente em setores como a logística, a informação crítica está frequentemente dispersa em extensos arquivos PDF, muitas vezes contendo diagramas, tabelas e imagens. Isso torna a busca por procedimentos específicos uma tarefa lenta e ineficiente.
+Em ambientes corporativos, especialmente em setores como a logística, a informação crítica está frequentemente dispersa em extensos arquivos PDF, muitas vezes contendo diagramas, tabelas e imagens.  
+Isso torna a busca por procedimentos específicos uma tarefa lenta e ineficiente.
 
-Este projeto implementa uma solução avançada de **RAG (Retrieval-Augmented Generation)** que permite aos colaboradores fazerem perguntas em linguagem natural e receberem respostas precisas e contextuais, extraídas diretamente dos documentos da empresa, incluindo texto dentro de imagens.
+Este projeto implementa uma solução avançada de RAG (Retrieval-Augmented Generation) que utiliza uma **busca híbrida**, combinando a precisão de um **Grafo de Conhecimento** com a flexibilidade da **busca vetorial**.  
+Assim, colaboradores podem fazer perguntas em linguagem natural e receber respostas precisas, extraídas e sintetizadas diretamente dos documentos da empresa — incluindo texto dentro de imagens.
+
+---
 
 ## ✨ Features
 
-* **Busca Semântica:** Entende o significado da pergunta, não apenas as palavras-chave.
-* **OCR (Reconhecimento Óptico de Caracteres):** Capaz de extrair e indexar texto de imagens e diagramas dentro dos PDFs.
-* **Atualização Incremental:** Permite adicionar novos documentos à base de conhecimento sem a necessidade de reprocessar todos os arquivos existentes.
-* **Interface de Chat Intuitiva:** Utiliza Chainlit para uma experiência de usuário moderna e interativa.
-* **Arquitetura 100% Local:** Roda inteiramente na máquina do usuário, garantindo a privacidade e a segurança dos dados.
+- 🔎 **Busca Híbrida**: Combina consultas factuais via Grafo de Conhecimento com busca semântica em índice vetorial.  
+- 🧩 **Grafo de Conhecimento**: Extrai entidades e relações (ex.: nomes, cargos, especificações de equipamentos).  
+- 📑 **OCR**: Extrai e indexa texto de imagens, tabelas e diagramas dentro dos PDFs.  
+- ⚡ **Atualização Incremental**: Permite adicionar novos documentos sem reprocessar todos os arquivos.  
+- 💬 **Interface de Chat Intuitiva**: Desenvolvida com Chainlit.  
+- 🔒 **Arquitetura 100% Local**: Garantia de privacidade e segurança dos dados.  
+
+---
 
 ## 🏗️ Arquitetura
 
-O sistema é dividido em três camadas lógicas principais:
+O sistema utiliza uma **arquitetura de RAG Híbrida**, dividida em duas bases de conhecimento:
 
-1.  **Interface (Frontend):** Construída com **Chainlit**, é a camada de apresentação responsável pelo fluxo de interação com o usuário.
-2.  **Lógica da Aplicação (Backend):** Orquestra os processos, conectando a interface à pipeline de IA.
-    * Recebe a pergunta do usuário via `app.py`.
-    * Utiliza o `chatbot.py` para coordenar a busca e a geração da resposta.
+### 📊 Grafo de Conhecimento (para Fatos)
+- Usa o modelo **Llama 3** com engenharia de prompt avançada para extrair relações estruturadas (ex.: `Entidade -> Relação -> Entidade`).  
+- Os fatos são armazenados em `knowledge_graph.json`, ideal para consultas precisas.  
 
-3.  **Pipeline de Dados e IA (RAG Core):** Contém os componentes de Inteligência Artificial que são a base da solução.
-    * **Ingestão de Documentos:** Utiliza `Unstructured` com **Tesseract** e **Poppler** para um processamento robusto de PDFs, extraindo texto de forma eficaz, inclusive de imagens (OCR).
-    * **Modelo de Embedding:** Usa o **Snowflake Arctic (`snowflake-arctic-embed-m`)** para converter os trechos de texto em vetores numéricos de alta qualidade.
-    * **Índice Vetorial:** Armazena os vetores em um índice **FAISS** local para buscas rápidas por similaridade.
-    * **Modelo de Linguagem (LLM):** O **Llama 3**, rodando via **Ollama**, recebe o contexto recuperado pelo FAISS e gera a resposta final em linguagem natural.
+### 📚 Índice Vetorial (para Contexto)
+- Usa o modelo de embedding **Snowflake Arctic** para converter chunks de texto em vetores numéricos.  
+- Os vetores são armazenados em um índice **FAISS**, ideal para buscas semânticas rápidas.  
+
+Durante a consulta, o chatbot combina evidências das duas fontes e gera a resposta final com o **Llama 3**.
+
+---
 
 ## 🛠️ Tecnologias Utilizadas
 
--   **Linguagem:** Python 3.11 (recomendado para maior compatibilidade)
--   **Interface:** Chainlit
--   **Modelo de Linguagem (LLM):** Llama 3 (via Ollama)
--   **Modelo de Embedding:** Snowflake Arctic (`snowflake-arctic-embed-m`)
--   **Índice Vetorial:** FAISS
--   **Manipulação de PDF e OCR:** Unstructured, Tesseract, Poppler
--   **Ambiente Virtual:** venv
+- **🐍 Linguagem**: Python 3.11  
+- **💻 Interface**: Chainlit  
+- **🧠 LLM**: Llama 3 (via Ollama)  
+- **🔢 Embedding**: Snowflake Arctic (`snowflake-arctic-embed-m`)  
+- **📦 Índice Vetorial**: FAISS  
+- **🕸️ Extração de Grafo**: LangChain + Pydantic  
+- **📑 PDF e OCR**: Unstructured, Tesseract, Poppler  
+- **📂 Ambiente Virtual**: venv  
+
+---
 
 ## 🚀 Como Executar o Projeto
 
-Siga os passos abaixo para configurar e rodar o projeto em seu ambiente local.
-
 ### 1. Pré-requisitos
-
--   Python 3.11 ou superior
--   [Ollama](https://ollama.com/) instalado e em execução.
--   **Tesseract OCR:** Instalado e com seu caminho adicionado à variável de ambiente `PATH` do sistema.
--   **Poppler:** Utilitários baixados e com a pasta `bin` adicionada à variável de ambiente `PATH` do sistema.
+- Python 3.11 ou superior  
+- Ollama instalado e em execução  
+- Tesseract OCR instalado e no PATH do sistema  
+- Poppler instalado e no PATH do sistema  
 
 ### 2. Instalação
+Clone o repositório e entre no diretório:
 
-**a. Clone o repositório:**
-```bash
-git clone [https://github.com/ripercario/TCC---Chatbot-using-RAG.git](https://github.com/ripercario/TCC---Chatbot-using-RAG.git)
+git clone https://github.com/ripercario/TCC---Chatbot-using-RAG.git
 cd TCC---Chatbot-using-RAG
-```
 
-**b. Crie e ative um ambiente virtual:**
-```bash
+Crie e ative o ambiente virtual:
+
 # Windows
 python -m venv .venv
 .\.venv\Scripts\activate
 
-
 # macOS / Linux
 python3 -m venv .venv
 source .venv/bin/activate
-```
 
-**c. Instale as dependências:**
-```bash
+Instale as dependências:
+
 pip install -r requirements.txt
-```
 
-**d. Baixe o modelo Llama 3 via Ollama:**
-```bash
+Baixe o modelo Llama 3 via Ollama:
+
 ollama pull llama3
-```
 
-### 3. Configuração
+---
 
-**a. Adicione os seus documentos:**
-Coloque todos os manuais e documentos em formato `.pdf` em um caminho, que será passado para o `create_index.py`.
+### 3. ⚙️ Configuração (Ingestão de Dados)
 
-**b. Crie o índice vetorial:**
-Execute o script `create_index.py` para processar os PDFs e criar o banco de dados vetorial FAISS.
+Adicione os documentos PDF na pasta `Docmuentos/`.
+
+Crie/atualize as bases de conhecimento executando:
+
+# Criar/atualizar índice vetorial FAISS
 python create_index.py
 
+# Criar/atualizar Grafo de Conhecimento
+python app/build_graph.py
 
-Observação: Este processo pode ser lento na primeira vez devido ao OCR. Ele só precisa ser executado quando novos documentos são adicionados.
+Após a execução, serão gerados:
+- Pasta `data/faiss_index/`
+- Arquivo `knowledge_graph.json`
 
-Ao final do processo, uma nova pasta chamada `data/faiss_index` será criada.
+---
 
-### 4. Execução
+### 4. ▶️ Execução
 
-Com o Ollama em execução em segundo plano, inicie a aplicação Chainlit:
-```bash
+Com o Ollama rodando em segundo plano, inicie a aplicação:
+
 chainlit run app/app.py -w
-```
-A flag `-w` (watch) reinicia o servidor automaticamente sempre que você salvar uma alteração no código.
 
-Abra o seu navegador e acesse `http://localhost:8000` para começar a interagir com o chatbot.
+Acesse no navegador:  
+http://localhost:8000
+
+---
 
 ## 📁 Estrutura do Projeto
-```
+
 .
 ├── app/
 │   ├── __init__.py
-│   ├── app.py          # Lógica da interface com Chainlit
-│   ├── chatbot.py      # Lógica de orquestração e chamada ao modelo
-│   └── rag_pipeline.py # Funções de criação e consulta do índice RAG   
+│   ├── app.py              # Interface com Chainlit
+│   ├── build_graph.py      # Criação/atualização do Grafo de Conhecimento
+│   ├── chatbot.py          # Orquestração e chamada ao modelo
+│   └── rag_pipeline.py     # Criação e consulta ao índice FAISS
+├── Docmuentos/             # PDFs da empresa
 ├── data/
-│   └── faiss_index/    # Criado/atualizado após a execução de create_index.py
+│   └── faiss_index/        # Índice FAISS
 ├── .gitignore
 ├── chainlit.md
-├── create_index.py     # Script para criar/atualizar o índice vetorial
+├── create_index.py         # Script de índice vetorial
+├── knowledge_graph.json    # Base factual
 ├── README.md
 └── requirements.txt
-```
+
+---
 
 ## ✒️ Autor
 
--   **Ricardo Percario de Souza Ribeiro** 
+**Ricardo Percario de Souza Ribeiro**
