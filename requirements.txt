@@ -1,8 +1,27 @@
-chainlit==0.7.701
-langchain==0.1.14
-langchain-community==0.0.30
-faiss-cpu==1.7.4
-sentence-transformers==2.6.1
-requests==2.31.0
-pdfminer.six==20221105
-PyPDF2==3.0.1
+# Web Interface
+chainlit
+
+# LangChain Core e Componentes de IA
+langchain
+langchain-community
+langchain-huggingface
+langchain-ollama
+
+# Vector Store
+faiss-cpu
+
+# Embedding Models
+sentence-transformers
+
+# PDF Processing & OCR
+unstructured[local-inference]
+pytesseract
+pymupdf
+
+# Lógica de Grafo (Protótipo)
+lightrag
+litellm
+
+# Utilitários
+python-dotenv
+networkx

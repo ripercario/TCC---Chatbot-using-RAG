@@ -1,10 +1,11 @@
-# app/rag_pipeline.py
+import json
+import os
+from typing import List
 
 from langchain_community.document_loaders import UnstructuredPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-import os
 
 # Define o caminho padrão para o índice FAISS salvo.
 INDEX_PATH = "data/faiss_index"
@@ -28,13 +29,13 @@ class ArcticHuggingFaceEmbeddings(HuggingFaceEmbeddings):
 
 def update_or_create_vector_store(pdf_path: str, index_path: str = INDEX_PATH):
     """
-    Processa um arquivo PDF e cria ou atualiza um vector store local.
-    Se um índice já existe no `index_path`, os novos documentos são adicionados a ele.
+    Processa um arquivo PDF e cria ou atualiza um vector store local (FAISS).
+    Se um índice já existe, os novos documentos são adicionados a ele.
     Caso contrário, um novo índice é criado.
     """
-    print(f"Processando documento: {pdf_path}...")
+    print(f"Processando documento para o índice FAISS: {pdf_path}...")
     try:
-        # Carrega o documento usando Unstructured com OCR forçado para português.
+        # Carrega o documento usando Unstructured com OCR para português.
         loader = UnstructuredPDFLoader(pdf_path, strategy="ocr_only", languages=["por"])
         new_documents = loader.load()
         
@@ -55,24 +56,24 @@ def update_or_create_vector_store(pdf_path: str, index_path: str = INDEX_PATH):
 
     # Verifica se o índice local já existe para decidir entre atualizar ou criar.
     if os.path.exists(index_path):
-        print(f"Índice existente encontrado. Atualizando...")
+        print(f"Índice FAISS existente encontrado. Atualizando...")
         vectorstore = FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
         vectorstore.add_documents(new_chunks)
-        print("Índice atualizado.")
+        print("Índice FAISS atualizado.")
     else:
-        print(f"Nenhum índice encontrado. Criando novo índice...")
+        print(f"Nenhum índice FAISS encontrado. Criando novo índice...")
         os.makedirs(index_path, exist_ok=True)
         vectorstore = FAISS.from_documents(new_chunks, embeddings)
-        print("Novo índice criado.")
+        print("Novo índice FAISS criado.")
 
     # Salva o estado do vector store no disco.
     vectorstore.save_local(index_path)
-    print(f"Índice salvo com sucesso em '{index_path}'.")
+    print(f"Índice FAISS salvo com sucesso em '{index_path}'.")
 
 def load_vector_store(index_path: str = INDEX_PATH):
     """Carrega o índice FAISS do disco."""
     if not os.path.exists(index_path):
-        print(f"Erro: Índice não encontrado em '{index_path}'.")
+        print(f"Erro: Índice FAISS não encontrado em '{index_path}'.")
         return None
     
     embeddings = ArcticHuggingFaceEmbeddings(model_name="Snowflake/snowflake-arctic-embed-m")
@@ -82,20 +83,16 @@ def load_vector_store(index_path: str = INDEX_PATH):
 
 def retrieve_evidence(query: str, k: int = 15):
     """
-    Recupera os 'k' chunks de texto mais relevantes para uma dada query.
+    Recupera os 'k' chunks de texto mais relevantes para uma dada query do índice FAISS.
     """
     vectorstore = load_vector_store()
     if vectorstore is None:
-        return "A base de conhecimento está vazia. Por favor, adicione um PDF."
+        return "A base de conhecimento vetorial (FAISS) está vazia."
 
     # Realiza a busca por similaridade no vector store.
     results = vectorstore.similarity_search(query, k=k)
     
     # Formata os resultados como uma única string de contexto.
     evidence = "\n---\n".join([doc.page_content for doc in results])
-    
-    # Imprime as evidências recuperadas para fins de depuração.
-    print("\n--- EVIDÊNCIAS RECUPERADAS PARA O LLM ---\n")
-    print(evidence)
     
     return evidence
